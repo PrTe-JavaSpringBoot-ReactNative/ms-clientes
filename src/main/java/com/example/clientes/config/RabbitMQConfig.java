@@ -11,89 +11,75 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configuración de RabbitMQ para ms-clientes.
  *
- * Topología de mensajería:
+ * Topología completa de mensajería:
  *
- *   ms-clientes  ──(producer)──▶  Exchange: clientes.events
- *                                      │
- *                                      └──▶  Queue: clientes.eventos.cuentas
- *                                                 │
- *                                           ms-cuentas (consumer)
- *                                           escucha cambios de estado del cliente
- *                                           (ej: cliente desactivado → bloquear cuentas)
+ *  [SOLICITUD DE VALIDACIÓN]
+ *  ms-cuentas (producer) ──▶ Exchange: clientes.events
+ *                                  └──▶ Queue: clientes.solicitudes.validacion
+ *                                             └──▶ ms-clientes (consumer) ← acá
  *
- *   ms-clientes  ◀─(consumer)──  Queue: clientes.solicitudes.validacion
- *                                      │
- *                                 ms-cuentas (producer)
- *                                 solicita validar que un clienteId existe
- *                                 antes de crear una cuenta
- *
- * Patrón utilizado: Topic Exchange
- *   Permite enrutar mensajes por routing key con wildcards (* y #),
- *   facilitando extensiones futuras sin cambiar la configuración base.
+ *  [RESPUESTA DE VALIDACIÓN]
+ *  ms-clientes (producer) ──▶ Exchange: cuentas.events   ← acá
+ *                                  └──▶ Queue: cuentas.validacion.respuesta
+ *                                             └──▶ ms-cuentas (consumer)
  */
 @Configuration
 public class RabbitMQConfig {
 
-    // ── Nombres de Exchange ────────────────────────────────────────────────
+    // ── Exchanges ──────────────────────────────────────────────────────────
 
-    /** Exchange principal del microservicio de clientes */
     public static final String CLIENTES_EXCHANGE = "clientes.events";
+    public static final String CUENTAS_EXCHANGE = "cuentas.events";
 
-    // ── Nombres de Queues ──────────────────────────────────────────────────
+    // ── Queues ─────────────────────────────────────────────────────────────
 
-    /**
-     * Cola donde ms-clientes publica eventos de cambio de estado.
-     * ms-cuentas consume esta cola para reaccionar a cambios en clientes.
-     */
-    public static final String CLIENTES_EVENTOS_CUENTAS_QUEUE = "clientes.eventos.cuentas";
-
-    /**
-     * Cola donde ms-clientes recibe solicitudes de validación de clienteId
-     * enviadas por ms-cuentas antes de crear una cuenta.
-     */
+    /** ms-clientes CONSUME aquí: solicitudes de validación enviadas por ms-cuentas */
     public static final String CLIENTES_VALIDACION_QUEUE = "clientes.solicitudes.validacion";
+
+    /** ms-clientes PUBLICA aquí: respuestas de validación hacia ms-cuentas */
+    public static final String CUENTAS_VALIDACION_RESPUESTA_QUEUE = "cuentas.validacion.respuesta";
+
+    /** ms-clientes PUBLICA aquí: eventos de cambio de estado de un cliente */
+    public static final String CLIENTES_EVENTOS_CUENTAS_QUEUE = "clientes.eventos.cuentas";
 
     // ── Routing Keys ───────────────────────────────────────────────────────
 
-    public static final String CLIENTE_EVENTO_ROUTING_KEY = "cliente.evento.#";
     public static final String CLIENTE_VALIDACION_ROUTING_KEY = "cliente.validacion.solicitud";
+    public static final String CUENTA_VALIDACION_RESPUESTA_ROUTING_KEY = "cuenta.validacion.respuesta";
+    public static final String CLIENTE_EVENTO_ROUTING_KEY = "cliente.evento.#";
 
-    // ── Beans: Exchange ────────────────────────────────────────────────────
+    // ── Beans: Exchanges ───────────────────────────────────────────────────
 
     @Bean
     public TopicExchange clientesExchange() {
-        return ExchangeBuilder
-                .topicExchange(CLIENTES_EXCHANGE)
-                .durable(true)
-                .build();
+        return ExchangeBuilder.topicExchange(CLIENTES_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public TopicExchange cuentasExchange() {
+        return ExchangeBuilder.topicExchange(CUENTAS_EXCHANGE).durable(true).build();
     }
 
     // ── Beans: Queues ──────────────────────────────────────────────────────
 
     @Bean
-    public Queue clientesEventosCuentasQueue() {
-        return QueueBuilder
-                .durable(CLIENTES_EVENTOS_CUENTAS_QUEUE)
-                .build();
+    public Queue clientesValidacionQueue() {
+        return QueueBuilder.durable(CLIENTES_VALIDACION_QUEUE).build();
     }
 
     @Bean
-    public Queue clientesValidacionQueue() {
-        return QueueBuilder
-                .durable(CLIENTES_VALIDACION_QUEUE)
-                .build();
+    public Queue cuentasValidacionRespuestaQueue() {
+        return QueueBuilder.durable(CUENTAS_VALIDACION_RESPUESTA_QUEUE).build();
+    }
+
+    @Bean
+    public Queue clientesEventosCuentasQueue() {
+        return QueueBuilder.durable(CLIENTES_EVENTOS_CUENTAS_QUEUE).build();
     }
 
     // ── Beans: Bindings ────────────────────────────────────────────────────
 
-    @Bean
-    public Binding bindingClientesEventosCuentas() {
-        return BindingBuilder
-                .bind(clientesEventosCuentasQueue())
-                .to(clientesExchange())
-                .with(CLIENTE_EVENTO_ROUTING_KEY);
-    }
-
+    /** ms-clientes escucha aquí las solicitudes de validación de ms-cuentas */
     @Bean
     public Binding bindingClientesValidacion() {
         return BindingBuilder
@@ -102,21 +88,31 @@ public class RabbitMQConfig {
                 .with(CLIENTE_VALIDACION_ROUTING_KEY);
     }
 
-    // ── Beans: Serialización ───────────────────────────────────────────────
+    /** ms-clientes publica las respuestas de validación en el exchange de cuentas */
+    @Bean
+    public Binding bindingCuentasValidacionRespuesta() {
+        return BindingBuilder
+                .bind(cuentasValidacionRespuestaQueue())
+                .to(cuentasExchange())
+                .with(CUENTA_VALIDACION_RESPUESTA_ROUTING_KEY);
+    }
 
-    /**
-     * Convierte los mensajes a/desde JSON automáticamente.
-     * Permite enviar objetos Java directamente sin serializar manualmente.
-     */
+    /** ms-clientes publica eventos de cambio de estado al exchange de clientes */
+    @Bean
+    public Binding bindingClientesEventosCuentas() {
+        return BindingBuilder
+                .bind(clientesEventosCuentasQueue())
+                .to(clientesExchange())
+                .with(CLIENTE_EVENTO_ROUTING_KEY);
+    }
+
+    // ── Serialización ──────────────────────────────────────────────────────
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    /**
-     * RabbitTemplate configurado con el converter JSON.
-     * Es el bean que se usa para publicar mensajes (producer).
-     */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
