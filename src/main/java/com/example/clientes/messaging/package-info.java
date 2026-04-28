@@ -1,5 +1,3 @@
-package com.example.clientes.messaging;
-
 /**
  * Paquete de mensajería asíncrona con RabbitMQ.
  *
@@ -44,5 +42,4 @@ package com.example.clientes.messaging;
  * │  }                                                                  │
  * └─────────────────────────────────────────────────────────────────────┘
  */
-class package-info {
-}
+package com.example.clientes.messaging;
