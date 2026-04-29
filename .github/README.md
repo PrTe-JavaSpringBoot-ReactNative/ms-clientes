@@ -14,7 +14,7 @@ Este servicio es el dueño exclusivo de los datos de personas y clientes. Ningú
 
 ---
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 | Tecnología | Versión | Rol |
 |---|---|---|
@@ -97,7 +97,7 @@ La app estará en: `http://localhost:8081/api`
 
 ---
 
-## 🔌 Endpoints
+## Endpoints
 
 | Método | Endpoint | Descripción |
 |---|---|---|---|
@@ -110,7 +110,7 @@ La app estará en: `http://localhost:8081/api`
 
 ---
 
-## ⚙️ Variables de entorno
+## Variables de entorno
 
 | Variable | Default | Descripción |
 |---|---|---|
