@@ -83,7 +83,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 }
 ```
 
-### Para ejecutar requiere PostgreSQL funcionando:
+## Para ejecutar requiere PostgreSQL funcionando:
 
 ```bash
 # Luego correr el microservicio desde el IDE o:
@@ -93,7 +93,12 @@ mvn spring-boot:run
 
 La app estará en: `http://localhost:8081/api`
 
----
+### Ejecutar tests
+
+```bash
+cd ms-cuentas
+mvn test
+```
 
 ---
 
