@@ -4,7 +4,7 @@ Microservicio responsable del dominio **Persona** y **Cliente** dentro de la arq
 
 ---
 
-## 🎯 Responsabilidad de este microservicio
+## Responsabilidad de este microservicio
 
 Este servicio es el dueño exclusivo de los datos de personas y clientes. Ningún otro microservicio accede directamente a su base de datos. La comunicación inter-servicio se realiza únicamente a través de RabbitMQ.
 
@@ -21,15 +21,13 @@ Este servicio es el dueño exclusivo de los datos de personas y clientes. Ningú
 | **Java** | 17 (LTS) | Lenguaje principal |
 | **Spring Boot** | 3.2.5 | Framework |
 | **Spring Data JPA / Hibernate** | (incluido) | ORM / acceso a datos |
-| **Spring AMQP** | (incluido) | Cliente RabbitMQ |
 | **PostgreSQL** | 15 | Base de datos (producción) |
-| **H2** | (incluido) | Base de datos en tests |
 | **Lombok** | (incluido) | Reducción de boilerplate |
 | **JUnit 5 + Mockito + MockMvc** | (incluido) | Testing |
 
 ---
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 ms-clientes/
@@ -38,45 +36,23 @@ ms-clientes/
 │   │   ├── java/com/example/clientes/
 │   │   │   ├── MsClientesApplication.java       # Entry point
 │   │   │   ├── controller/
-│   │   │   │   └── HealthController.java         # ✅ GET /api/health
-│   │   │   │   # TODO: ClienteController         → /api/clientes
 │   │   │   ├── service/
-│   │   │   │   # TODO: ClienteService            → lógica de negocio
 │   │   │   ├── repository/
-│   │   │   │   # TODO: ClienteRepository         → extends JpaRepository
 │   │   │   ├── entity/
-│   │   │   │   # TODO: Persona.java              → @MappedSuperclass
-│   │   │   │   # TODO: Cliente.java              → @Entity, hereda Persona
 │   │   │   ├── dto/
-│   │   │   │   # TODO: ClienteRequestDTO
-│   │   │   │   # TODO: ClienteResponseDTO
-│   │   │   ├── exception/
-│   │   │   │   └── GlobalExceptionHandler.java   # ✅ Manejador global
-│   │   │   ├── config/
-│   │   │   │   └── RabbitMQConfig.java           # ✅ Exchange, queues, bindings
-│   │   │   └── messaging/
-│   │   │       # TODO: ClienteEventoPublisher    → publica eventos de cliente
-│   │   │       # TODO: ClienteValidacionConsumer → responde solicitudes de validación
+│   │   │   └── exception/
 │   │   └── resources/
-│   │       └── application.yml                   # ✅ Config PostgreSQL + RabbitMQ
-│   └── test/
-│       ├── java/com/example/clientes/
-│       │   ├── controller/
-│       │   │   └── HealthControllerTest.java     # ✅ Tests del /health
-│       │   └── service/
-│       │       # TODO: ClienteServiceTest
-│       └── resources/
-│           └── application.yml                   # ✅ Config H2 para tests
+│   │       └── application.yml                   # Config PostgreSQL + RabbitMQ
 ├── .github/
-│   └── README.md                                 # Este archivo
-├── Dockerfile                                    # ✅ Multi-stage build
-├── pom.xml                                       # ✅ Dependencias Maven
+│   └── README.md                                
+├── Dockerfile                                   
+├── pom.xml                                      
 └── .gitignore
 ```
 
 ---
 
-## 🏗️ Decisiones de arquitectura
+## Decisiones de arquitectura
 
 ### Herencia en JPA: `@MappedSuperclass`
 
@@ -107,71 +83,30 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 }
 ```
 
----
-
-## 📨 Mensajería asíncrona (RabbitMQ)
-
-Este microservicio participa en la mensajería de la siguiente forma:
-
-```
-ms-clientes (PRODUCER) ──▶ Exchange: clientes.events
-                                 │
-                                 ├──▶ [cliente.evento.estado]
-                                 │         └──▶ Queue: clientes.eventos.cuentas
-                                 │                   └── Consumer: ms-cuentas
-                                 │
-                                 └──▶ [cliente.validacion.solicitud]
-                                           └──▶ Queue: clientes.solicitudes.validacion
-                                                     └── Consumer: ms-clientes (este ms)
-
-ms-clientes (CONSUMER) ◀── Queue: clientes.solicitudes.validacion
-                               Responde si un clienteId existe
-```
-
-**Clases a implementar en `messaging/`:**
-- `ClienteEventoPublisher` → publica cuando un cliente cambia de estado
-- `ClienteValidacionConsumer` → escucha y responde si un clienteId es válido
-
----
-
-## 🚀 Levantar solo este microservicio (desarrollo local)
-
-Requiere PostgreSQL y RabbitMQ corriendo localmente:
+### Para ejecutar requiere PostgreSQL funcionando:
 
 ```bash
-# Desde la raíz del monorepo, levantar solo las dependencias
-docker compose up postgres-clientes rabbitmq -d
-
 # Luego correr el microservicio desde el IDE o:
 cd ms-clientes
 mvn spring-boot:run
 ```
 
-La app estará en: `http://localhost:8080/api`
+La app estará en: `http://localhost:8081/api`
 
 ---
-
-## 🧪 Ejecutar tests
-
-```bash
-cd ms-clientes
-mvn test
-```
-
-No requiere Docker (usa H2 en memoria).
 
 ---
 
 ## 🔌 Endpoints
 
-| Método | Endpoint | Descripción | Estado |
+| Método | Endpoint | Descripción |
 |---|---|---|---|
-| GET | `/api/health` | Verificación de vida | ✅ Implementado |
-| GET | `/api/clientes` | Listar clientes | 🔲 Pendiente |
-| GET | `/api/clientes/{id}` | Obtener cliente | 🔲 Pendiente |
-| POST | `/api/clientes` | Crear cliente | 🔲 Pendiente |
-| PUT | `/api/clientes/{id}` | Actualizar cliente | 🔲 Pendiente |
-| DELETE | `/api/clientes/{id}` | Eliminar cliente | 🔲 Pendiente |
+| GET | `/api/health` | Verificación de vida |
+| GET | `/api/clientes` | Listar clientes 
+| GET | `/api/clientes/{id}` | Obtener cliente |
+| POST | `/api/clientes` | Crear cliente | 
+| PUT | `/api/clientes/{id}` | Actualizar cliente | 
+| DELETE | `/api/clientes/{id}` | Eliminar cliente |
 
 ---
 
