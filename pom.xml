@@ -43,11 +43,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- RabbitMQ - Mensajería asíncrona -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
 
         <!-- PostgreSQL Driver -->
         <dependency>
@@ -77,12 +72,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Test de integración con RabbitMQ -->
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-rabbit-test</artifactId>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 

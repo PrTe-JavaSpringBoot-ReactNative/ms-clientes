@@ -6,12 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO para recibir datos de Cliente en las solicitudes HTTP.
- * 
- * Utiliza anotaciones de validación de Jakarta Validation para garantizar
- * que los datos recibidos cumplan con las restricciones de negocio.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

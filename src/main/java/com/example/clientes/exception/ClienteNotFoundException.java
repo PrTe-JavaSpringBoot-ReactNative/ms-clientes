@@ -1,8 +1,6 @@
 package com.example.clientes.exception;
 
-/**
- * Excepción lanzada cuando se intenta buscar un Cliente que no existe en la BD.
- */
+
 public class ClienteNotFoundException extends RuntimeException {
 
     public ClienteNotFoundException(String message) {

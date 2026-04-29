@@ -14,18 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Servicio de lógica de negocio para Cliente.
- * 
- * Implementa las reglas de negocio relacionadas con operaciones CRUD de clientes,
- * validaciones de integridad de datos y transformaciones DTO-Entidad.
- * 
- * Características:
- * - Validación de identificación única
- * - Transformación entre DTOs y Entidades
- * - Manejo transaccional de operaciones
- * - Logging de operaciones importantes
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -33,11 +21,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
 
-    /**
-     * Obtiene todos los clientes registrados.
-     * 
-     * @return Lista de ClienteResponseDTO con todos los clientes
-     */
+
     public List<ClienteResponseDTO> obtenerTodosLosClientes() {
         log.info("Obteniendo todos los clientes");
         return clienteRepository.findAll().stream()
@@ -45,13 +29,6 @@ public class ClienteService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene un cliente específico por su ID.
-     * 
-     * @param clienteId ID del cliente a buscar
-     * @return ClienteResponseDTO del cliente encontrado
-     * @throws ClienteNotFoundException Si el cliente no existe
-     */
     public ClienteResponseDTO obtenerClientePorId(Long clienteId) {
         log.info("Obteniendo cliente con ID: {}", clienteId);
         Cliente cliente = clienteRepository.findById(clienteId)
@@ -62,17 +39,6 @@ public class ClienteService {
         return entityToResponseDTO(cliente);
     }
 
-    /**
-     * Crea un nuevo cliente en el sistema.
-     * 
-     * Validaciones:
-     * - La identificación debe ser única en el sistema
-     * - Los datos obligatorios deben estar presentes
-     * 
-     * @param clienteRequestDTO Datos del cliente a crear
-     * @return ClienteResponseDTO del cliente creado
-     * @throws ClienteYaExisteException Si la identificación ya existe
-     */
     @Transactional
     public ClienteResponseDTO crearCliente(ClienteRequestDTO clienteRequestDTO) {
         log.info("Creando nuevo cliente con identificación: {}", clienteRequestDTO.getIdentificacion());
@@ -91,14 +57,6 @@ public class ClienteService {
         return entityToResponseDTO(clienteGuardado);
     }
 
-    /**
-     * Actualiza los datos de un cliente existente.
-     * 
-     * @param clienteId ID del cliente a actualizar
-     * @param clienteRequestDTO Nuevos datos del cliente
-     * @return ClienteResponseDTO del cliente actualizado
-     * @throws ClienteNotFoundException Si el cliente no existe
-     */
     @Transactional
     public ClienteResponseDTO actualizarCliente(Long clienteId, ClienteRequestDTO clienteRequestDTO) {
         log.info("Actualizando cliente con ID: {}", clienteId);
@@ -109,14 +67,12 @@ public class ClienteService {
                     return new ClienteNotFoundException(clienteId);
                 });
 
-        // Actualizar campos de Persona
         cliente.setNombre(clienteRequestDTO.getNombre());
         cliente.setGenero(clienteRequestDTO.getGenero());
         cliente.setEdad(clienteRequestDTO.getEdad());
         cliente.setDireccion(clienteRequestDTO.getDireccion());
         cliente.setTelefono(clienteRequestDTO.getTelefono());
 
-        // Actualizar campos específicos de Cliente
         cliente.setContrasena(clienteRequestDTO.getContrasena());
         cliente.setEstado(clienteRequestDTO.getEstado());
 
@@ -126,12 +82,7 @@ public class ClienteService {
         return entityToResponseDTO(clienteActualizado);
     }
 
-    /**
-     * Elimina un cliente del sistema.
-     * 
-     * @param clienteId ID del cliente a eliminar
-     * @throws ClienteNotFoundException Si el cliente no existe
-     */
+
     @Transactional
     public void eliminarCliente(Long clienteId) {
         log.info("Eliminando cliente con ID: {}", clienteId);
@@ -145,12 +96,6 @@ public class ClienteService {
         log.info("Cliente con ID {} eliminado exitosamente", clienteId);
     }
 
-    /**
-     * Convierte una entidad Cliente a un DTO de respuesta.
-     * 
-     * @param cliente Entidad Cliente
-     * @return ClienteResponseDTO
-     */
     private ClienteResponseDTO entityToResponseDTO(Cliente cliente) {
         return ClienteResponseDTO.builder()
                 .clienteId(cliente.getClienteId())
@@ -164,12 +109,7 @@ public class ClienteService {
                 .build();
     }
 
-    /**
-     * Convierte un DTO de solicitud a una entidad Cliente.
-     * 
-     * @param requestDTO ClienteRequestDTO
-     * @return Entidad Cliente
-     */
+
     private Cliente requestDTOToEntity(ClienteRequestDTO requestDTO) {
         return Cliente.builder()
                 .nombre(requestDTO.getNombre())

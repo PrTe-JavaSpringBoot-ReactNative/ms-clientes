@@ -6,17 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Entidad Cliente que hereda de Persona.
- * 
- * Representa un cliente del sistema que extiende los atributos de una persona
- * con información de acceso y estado de la cuenta.
- * 
- * Atributos adicionales:
- * - clienteId: Identificador único del cliente (clave primaria)
- * - contrasena: Contraseña encriptada para acceso al sistema
- * - estado: Estado del cliente (ACTIVO, INACTIVO, SUSPENDIDO, etc.)
- */
+
 @Entity
 @Table(name = "clientes")
 @Data

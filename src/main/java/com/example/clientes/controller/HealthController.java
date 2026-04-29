@@ -8,10 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * Endpoint de salud del microservicio ms-clientes.
- * Permite verificar que el servicio está activo.
- */
 @RestController
 @RequestMapping("/health")
 public class HealthController {
