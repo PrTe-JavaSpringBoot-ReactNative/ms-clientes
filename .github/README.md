@@ -91,7 +91,7 @@ cd ms-clientes
 mvn spring-boot:run
 ```
 
-La app estará en: `http://localhost:8081/api`
+La app estará en: `http://localhost:8080/api`
 
 ### Ejecutar tests
 
